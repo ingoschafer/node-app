@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/f3bba53f-4273-48f5-9d0f-f51613e4ac8a/resourceGroups/test-service-bus-resource-group/providers/Microsoft.Web/sites/nodejsTestToSBus",
+    "appService.deploySubpath": "."
+}
