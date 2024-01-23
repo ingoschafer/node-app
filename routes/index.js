@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
 
-const { delay, ServiceBusClient, ServiceBusMessage } = require("@azure/service-bus");
+const { delay, ServiceBusClient } = require("@azure/service-bus");
 const { DefaultAzureCredential } = require("@azure/identity");
 
 const fullyQualifiedNamespace = "test-s-bus.servicebus.windows.net";
@@ -15,7 +15,7 @@ async function receive() {
   const receiver = sbClient.createReceiver(queueName);
   
   const messageHandler = async (messageReceived) => {
-    console.log(JSON.parse(messageReceived.body)["dedicomID"]);
+    console.log(JSON.parse(messageReceived.body));
   };
 
   const errorHandler = async (error) => {
@@ -39,7 +39,7 @@ receive();
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
+  res.render('index', { title: 'Express', message: messageReceived });
 });
 
 module.exports = router;
