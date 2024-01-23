@@ -1,41 +1,45 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+//var express = require('express');
+//var router = express.Router();
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+const { delay, ServiceBusClient } = require("@azure/service-bus");
+const { DefaultAzureCredential } = require("@azure/identity");
 
-var app = express();
+const fullyQualifiedNamespace = "test-s-bus.servicebus.windows.net";
+const credential = new DefaultAzureCredential();
+const queueName = "testsbusqueue";
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
 
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+async function receive() {
+  const sbClient = new ServiceBusClient(fullyQualifiedNamespace, credential);
+  const receiver = sbClient.createReceiver(queueName);
+  
+  const messageHandler = async (messageReceived) => {
+    console.log(JSON.parse(messageReceived.body));
+  };
 
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  next(createError(404));
-});
+  const errorHandler = async (error) => {
+    console.error(error);
+  };
 
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+  receiver.subscribe({
+    processMessage: messageHandler,
+    processError: errorHandler
+  });
 
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
-});
+  await delay(10000);
 
-module.exports = app;
+  await receiver.close();
+  await sbClient.close();
+}
+
+
+// shall run forever
+receive();
+
+/* GET home page. */
+//router.get('/', function(req, res, next) {
+//  res.render('index', { title: 'Express', message: messageReceived });
+//});
+
+//module.exports = router;
