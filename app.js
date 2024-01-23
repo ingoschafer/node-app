@@ -36,10 +36,3 @@ async function receive() {
 
 // shall run forever
 receive();
-
-/* GET home page. */
-//router.get('/', function(req, res, next) {
-//  res.render('index', { title: 'Express', message: messageReceived });
-//});
-
-//module.exports = router;
