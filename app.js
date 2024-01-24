@@ -1,13 +1,9 @@
-//var express = require('express');
-//var router = express.Router();
-
 const { delay, ServiceBusClient } = require("@azure/service-bus");
 const { DefaultAzureCredential } = require("@azure/identity");
 
 const fullyQualifiedNamespace = "test-s-bus.servicebus.windows.net";
 const credential = new DefaultAzureCredential();
 const queueName = "testsbusqueue";
-
 
 
 async function receive() {
