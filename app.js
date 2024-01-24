@@ -7,6 +7,8 @@ const queueName = "testsbusqueue";
 
 
 async function receive() {
+  console.log("start receiving.");
+
   const sbClient = new ServiceBusClient(fullyQualifiedNamespace, credential);
   const receiver = sbClient.createReceiver(queueName);
   
@@ -27,6 +29,7 @@ async function receive() {
 
   await receiver.close();
   await sbClient.close();
+  console.log("connection closed.");
 }
 
 
