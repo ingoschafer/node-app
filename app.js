@@ -1,37 +1,54 @@
-const { delay, ServiceBusClient } = require("@azure/service-bus");
-const { DefaultAzureCredential } = require("@azure/identity");
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT Licence.
 
-const fullyQualifiedNamespace = "test-s-bus.servicebus.windows.net";
-const credential = new DefaultAzureCredential();
-const queueName = "testsbusqueue";
+const { ServiceBusClient } = require("@azure/service-bus");
 
+// Define connection string and related Service Bus entity names here
+const connectionString = 'Endpoint=sb://test-s-bus.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=m8IPyrt7pH6FKV3uldLI4ELzEJ++lh0xO+ASbGk2ncE=';
+const queueName = 'testsbusqueue';
 
-async function receive() {
-  console.log("start receiving.");
+async function main() {
+  const sbClient = new ServiceBusClient(connectionString);
 
-  const sbClient = new ServiceBusClient(fullyQualifiedNamespace, credential);
-  const receiver = sbClient.createReceiver(queueName);
-  
-  const messageHandler = async (messageReceived) => {
-    console.log(JSON.parse(messageReceived.body));
-  };
+  // If receiving from a subscription you can use the createReceiver(topicName, subscriptionName) overload
+  // instead.
+  const queueReceiver = sbClient.createReceiver(queueName);
 
-  const errorHandler = async (error) => {
-    console.error(error);
-  };
+  // To receive messages from sessions, use getSessionReceiver instead of getReceiver or look at
+  // the sample in sessions.ts file
+  try {
+    let allMessages = [];
 
-  receiver.subscribe({
-    processMessage: messageHandler,
-    processError: errorHandler
-  });
+    console.log(`Receiving messages...`);
 
-  await delay(10000);
+    while (allMessages.length < 2) {
+      const messages = await queueReceiver.receiveMessages(10, {
+        maxWaitTimeInMs: 60 * 1000,
+      });
 
-  await receiver.close();
-  await sbClient.close();
-  console.log("connection closed.");
+      if (!messages.length) {
+        console.log("No more messages to receive");
+        break;
+      }
+
+      console.log(`Received ${messages.length} messages`);
+      allMessages.push(...messages);
+
+      for (let message of messages) {
+        console.log(`  Message: '${message.body}'`);
+
+        // completing the message will remove it from the remote queue or subscription.
+        await queueReceiver.completeMessage(message);
+      }
+    }
+
+    await queueReceiver.close();
+  } finally {
+    await sbClient.close();
+  }
 }
 
-
-// shall run forever
-receive();
+main().catch((err) => {
+  console.log("ReceiveMessageLoop Sample - Error occurred: ", err);
+  process.exit(1);
+});
