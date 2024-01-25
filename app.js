@@ -29,7 +29,7 @@ async function main() {
     console.log(`Receiving messages...`);
 
     while (allMessages.length < 2) {
-      const messages = await queueReceiver.receiveMessages(10, {
+      const messages = await queueReceiver.receiveMessages(2, {
         maxWaitTimeInMs: 60 * 1000,
       });
 
@@ -44,7 +44,6 @@ async function main() {
       for (let message of messages) {
         console.log(`  Message: '${message.body}'`);
 
-        // completing the message will remove it from the remote queue or subscription.
         await queueReceiver.completeMessage(message);
       }
     }
