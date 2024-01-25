@@ -35,7 +35,7 @@ async function main() {
 
       if (!messages.length) {
         console.log("No more messages to receive");
-        break;
+        continue;
       }
 
       console.log(`Received ${messages.length} messages`);
