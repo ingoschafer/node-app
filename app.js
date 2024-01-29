@@ -1,9 +1,11 @@
 require('dotenv').config();
 
 const { ServiceBusClient } = require("@azure/service-bus");
+const { run } = require("./pim");
+const { send } = require("./send");
 
-const connection = 'Endpoint=sb://test-s-bus.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=m8IPyrt7pH6FKV3uldLI4ELzEJ++lh0xO+ASbGk2ncE=';
-const queueName = 'testsbusqueue';
+const connection = process.env.CONNECTION;
+const queueName = process.env.QUEUE_NAME;
 
 async function main() {
   const sbClient = new ServiceBusClient(connection);
@@ -29,8 +31,17 @@ async function main() {
 
       for (let message of messages) {
         console.log(`  Message: '${message.body}'`);
+        const messageJson = JSON.parse(message.body);
+        console.log(`  sender: '${messageJson.sender}'`);
+        console.log(`  dedicomID: '${messageJson.dedicomID}'`);
 
-        await queueReceiver.completeMessage(message);
+        const product = await run(messageJson.dedicomID);
+        send(JSON.stringify(product));
+
+        if (messageJson.sender === "FE") {  
+          await queueReceiver.completeMessage(message);  
+        }
+        
       }
     }
 

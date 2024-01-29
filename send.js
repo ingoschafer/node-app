@@ -11,6 +11,37 @@ const queueName = process.env.QUEUE_NAME;
 
 const messages = [ {body: '{"sender":"FE", "dedicomID":"12345"}'} ];
 
+async function send(data) {
+    const queueName = process.env.AS_QUEUE_NAME;
+    const sbClient = new ServiceBusClient(fullyQualifiedNamespace, credential);
+    const sender = sbClient.createSender(queueName);
+
+    try {
+        let batch = await sender.createMessageBatch();
+        const productMessages = [ {body: `{"sender":"MW", "productData":${data}}` } ];
+        for (let i = 0; i < productMessages.length; i++) {
+            if (!batch.tryAddMessage(productMessages[i])) {
+                await sender.sendMessages(batch);
+
+                batch = await sender.createMessageBatch();
+
+                if (!batch.tryAddMessage(message[i])) {
+                    throw new Error("Message too big to fit in a batch");
+                }
+            }
+        }
+
+        await sender.sendMessages(batch);
+
+        console.log(`Sent a batch of messages to the queue: ${queueName}`);
+
+        await sender.close();
+    } finally {
+        await sbClient.close();
+    }
+}
+
+
 async function main() {
     const sbClient = new ServiceBusClient(fullyQualifiedNamespace, credential);
     const sender = sbClient.createSender(queueName);
@@ -43,3 +74,5 @@ main().catch((err) => {
     console.log("Error occurred: ", err);
     process.exit(1);
 });
+
+module.exports = { send };
