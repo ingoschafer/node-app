@@ -1,26 +1,12 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT Licence.
+require('dotenv').config();
 
 const { ServiceBusClient } = require("@azure/service-bus");
-const express = require('express');
 
-// Define connection string and related Service Bus entity names here
-const connectionString = 'Endpoint=sb://test-s-bus.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=m8IPyrt7pH6FKV3uldLI4ELzEJ++lh0xO+ASbGk2ncE=';
+const connection = 'Endpoint=sb://test-s-bus.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=m8IPyrt7pH6FKV3uldLI4ELzEJ++lh0xO+ASbGk2ncE=';
 const queueName = 'testsbusqueue';
 
-const app = express();
-const port = 8080;
-
-app.get('/', (req, res) => {
-  res.send('huhu?');
-});
-
-app.listen(port, () => {
-  console.log(`node-app listening on port ${port}`);
-});
-
 async function main() {
-  const sbClient = new ServiceBusClient(connectionString);
+  const sbClient = new ServiceBusClient(connection);
   const queueReceiver = sbClient.createReceiver(queueName);
 
   try {
