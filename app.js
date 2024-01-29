@@ -30,11 +30,6 @@ async function main() {
       allMessages.push(...messages);
 
       for (let message of messages) {
-        console.log(`  Message: '${message.body}'`);
-        const messageJson = JSON.parse(message.body);
-        console.log(`  sender: '${messageJson.sender}'`);
-        console.log(`  dedicomID: '${messageJson.dedicomID}'`);
-
         const product = await run(messageJson.dedicomID);
         send(JSON.stringify(product));
 

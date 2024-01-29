@@ -2,10 +2,6 @@ require('dotenv').config();
 
 const axios = require('axios');
 
-console.log("username: " + process.env.PIM_USERNAME);
-console.log("password: " + process.env.PIM_PASSWORD);
-console.log("authToken: " + process.env.PIM_AUTHORIZATION_TOKEN);
-
 async function authorize() {
     let data = JSON.stringify({
         "username": process.env.PIM_USERNAME,
@@ -56,7 +52,6 @@ async function getProduct(token, productID) {
 async function run(productID) {
     let authorization = await authorize();
     let bearerToken = "Bearer " + authorization.data.access_token;
-    console.log(bearerToken);
 
     let product = await getProduct(bearerToken, productID);
     return product.data;  
